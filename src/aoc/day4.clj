@@ -1,6 +1,6 @@
 (ns aoc.day4
-  (:import [java.security MessageDigest]
-           [javax.xml.bind DatatypeConverter]))
+  (:import java.security.MessageDigest
+           javax.xml.bind.DatatypeConverter))
 
 (def secret-key "yzbqklnj")
 

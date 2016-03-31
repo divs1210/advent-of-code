@@ -18,15 +18,10 @@
     [start end]))
 
 (defn str->cmd [s]
-  (cond
-    (.startsWith s "turn on")
-    [:on (str->rect s 8)]
-
-    (.startsWith s "turn off")
-    [:off (str->rect s 9)]
-
-    (.startsWith s "toggle")
-    [:toggle (str->rect s 7)]))
+  (condp #(.startsWith %2 %1) s
+    "turn on"  [:on (str->rect s 8)]
+    "turn off" [:off (str->rect s 9)]
+    "toggle"   [:toggle (str->rect s 7)]))
 
 (defn cmds-from-input [in]
   (->> in
@@ -38,7 +33,7 @@
         affected-lights (set (for [x (range x1 (inc x2))
                                    y (range y1 (inc y2))]
                                [x y]))]
-    (condp = op
+    (case op
       :on  (cset/union lights-on affected-lights)
       :off (cset/difference lights-on affected-lights)
       :toggle (let [turn-off (cset/intersection lights-on affected-lights)

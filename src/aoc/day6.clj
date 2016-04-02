@@ -28,37 +28,33 @@
        s/split-lines
        (map str->cmd)))
 
-(defn apply-cmd [cmd lights-on]
-  (let [[op [[x1 y1] [x2 y2]]] cmd
-        affected-lights (set (for [x (range x1 (inc x2))
-                                   y (range y1 (inc y2))]
-                               [x y]))]
-    (case op
-      :on  (cset/union lights-on affected-lights)
-      :off (cset/difference lights-on affected-lights)
-      :toggle (let [turn-off (cset/intersection lights-on affected-lights)
-                    turn-on  (cset/difference affected-lights lights-on)]
-                (-> lights-on
-                    (cset/difference turn-off)
-                    (cset/union turn-on))))))
+(defn apply-cmd
+  ([]
+   #{})
+  ([lights-on cmd]
+   (let [[op [[x1 y1] [x2 y2]]] cmd
+         affected-lights (set (for [x (range x1 (inc x2))
+                                    y (range y1 (inc y2))]
+                                [x y]))]
+     (case op
+       :on  (cset/union lights-on affected-lights)
+       :off (cset/difference lights-on affected-lights)
+       :toggle (let [turn-off (cset/intersection lights-on affected-lights)
+                     turn-on  (cset/difference affected-lights lights-on)]
+                 (-> lights-on
+                     (cset/difference turn-off)
+                     (cset/union turn-on)))))))
 
 (defn part-1 []
   (let [in (part-1-input)
         cmds (cmds-from-input in)]
-    (loop [cmds-left cmds
-           lights-on #{}]
-      (if-not cmds-left
-        (count lights-on)
-        (recur (next cmds-left)
-               (apply-cmd (first cmds-left) lights-on))))))
+    (count (reduce apply-cmd #{} cmds))))
 
-(defn part-1-par []
+(defn part-1-par [batch-size]
   (let [in (part-1-input)
         cmds (cmds-from-input in)]
     (count
-     (r/fold (fn
-               ([]
-                #{})
-               ([lights cmd]
-                (apply-cmd cmd lights)))
-             (cmds-from-input (part-1-input))))))
+     (r/fold batch-size
+             apply-cmd
+             apply-cmd
+             cmds))))

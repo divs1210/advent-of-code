@@ -53,8 +53,4 @@
 (defn part-1-par [batch-size]
   (let [in (part-1-input)
         cmds (cmds-from-input in)]
-    (count
-     (r/fold batch-size
-             apply-cmd
-             apply-cmd
-             cmds))))
+    (count (r/fold batch-size apply-cmd apply-cmd cmds))))

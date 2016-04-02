@@ -6,18 +6,24 @@
 (defn part-1-input []
   (.trim (slurp "resources/day6-part1-input")))
 
-(defn str->point [point-str]
+(defn str->point
+  "(str->point \"0,0\") => [0 0]"
+  [point-str]
   (map #(Integer. %)
        (s/split point-str #",")))
 
-(defn str->rect [cmd-str start-index]
+(defn str->rect
+  "(str->rect \"toggle 0,0 through 2,2\" 7) => [[0 0] [2 2]]"
+  [cmd-str start-index]
   (let [cmd-range (-> cmd-str
                       (.substring start-index)
                       .trim)
         [start-str _ end-str] (s/split cmd-range #" ")]
     (map str->point [start-str end-str])))
 
-(defn str->cmd [s]
+(defn str->cmd
+  "(str->cmd \"toggle 0,0 through 2,2\") => [:toggle [[0 0] [2 2]]]"
+  [s]
   (condp #(.startsWith %2 %1) s
     "turn on"  [:on (str->rect s 8)]
     "turn off" [:off (str->rect s 9)]

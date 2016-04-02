@@ -6,16 +6,16 @@
 (defn part-1-input []
   (.trim (slurp "resources/day6-part1-input")))
 
+(defn str->point [point-str]
+  (map #(Integer. %)
+       (s/split point-str #",")))
+
 (defn str->rect [cmd-str start-index]
-  (let [[start-str _ end-str] (s/split (-> cmd-str
-                                           (.substring start-index)
-                                           .trim)
-                                       #" ")
-        start (map #(Integer. %)
-                   (s/split start-str #","))
-        end   (map #(Integer. %)
-                   (s/split end-str #","))]
-    [start end]))
+  (let [cmd-range (-> cmd-str
+                      (.substring start-index)
+                      .trim)
+        [start-str _ end-str] (s/split cmd-range #" ")]
+    (map str->point [start-str end-str])))
 
 (defn str->cmd [s]
   (condp #(.startsWith %2 %1) s
@@ -31,9 +31,8 @@
 (defn apply-cmd
   ([]
    #{})
-  ([lights-on cmd]
-   (let [[op [[x1 y1] [x2 y2]]] cmd
-         affected-lights (set (for [x (range x1 (inc x2))
+  ([lights-on [op [[x1 y1] [x2 y2]]]]
+   (let [affected-lights (set (for [x (range x1 (inc x2))
                                     y (range y1 (inc y2))]
                                 [x y]))]
      (case op

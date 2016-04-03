@@ -1,6 +1,5 @@
 (ns aoc.day6
-  (:require [clojure.core.reducers :as r]
-            [clojure.set :as cset]
+  (:require [clojure.set :as cset]
             [clojure.string :as s]))
 
 (defn part-1-input []
@@ -34,28 +33,20 @@
        s/split-lines
        (map str->cmd)))
 
-(defn apply-cmd
-  ([]
-   #{})
-  ([lights-on [op [[x1 y1] [x2 y2]]]]
-   (let [affected-lights (set (for [x (range x1 (inc x2))
-                                    y (range y1 (inc y2))]
-                                [x y]))]
-     (case op
-       :on  (cset/union lights-on affected-lights)
-       :off (cset/difference lights-on affected-lights)
-       :toggle (let [turn-off (cset/intersection lights-on affected-lights)
-                     turn-on  (cset/difference affected-lights lights-on)]
-                 (-> lights-on
-                     (cset/difference turn-off)
-                     (cset/union turn-on)))))))
+(defn apply-cmd [lights-on [op [[x1 y1] [x2 y2]]]]
+  (let [affected-lights (set (for [x (range x1 (inc x2))
+                                   y (range y1 (inc y2))]
+                               [x y]))]
+    (case op
+      :on  (cset/union lights-on affected-lights)
+      :off (cset/difference lights-on affected-lights)
+      :toggle (let [turn-off (cset/intersection lights-on affected-lights)
+                    turn-on  (cset/difference affected-lights lights-on)]
+                (-> lights-on
+                    (cset/difference turn-off)
+                    (cset/union turn-on))))))
 
 (defn part-1 []
   (let [in (part-1-input)
         cmds (cmds-from-input in)]
     (count (reduce apply-cmd #{} cmds))))
-
-(defn part-1-par [batch-size]
-  (let [in (part-1-input)
-        cmds (cmds-from-input in)]
-    (count (r/fold batch-size apply-cmd apply-cmd cmds))))

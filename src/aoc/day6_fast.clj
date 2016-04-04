@@ -14,11 +14,15 @@
       (persistent! ret))))
 
 
+(defn light [x y]
+  (-> (dec grid-size)
+      (* y) (+ x)))
+
+
 (defn set-light!
   "Set the light at the given coord to v."
   [^longs grid ^long x ^long y ^long v]
-  (let [light (+ x (* y (dec grid-size)))]
-    (assoc! grid light v)))
+  (assoc! grid (light x y) v))
 
 
 (defn toggle-light!
@@ -54,14 +58,49 @@
         grid))))
 
 
-(defn solve
-  "Given commands input file, execute and then count number of lights
-   that are ON."
-  [cmd-input-file]
-  (let [cmds (->> cmd-input-file
+(defn part-1
+  "Execute all commands and then count number of lights that are ON."
+  []
+  (let [cmds (->> "resources/day6-part1-input"
                   slurp
                   s/split-lines
                   (map parse-cmd))
         grid (transient (make-grid))
         solved-grid (persistent! (reduce process-cmd grid cmds))]
     (count (filter pos? solved-grid))))
+
+
+(defn process-cmd-revised
+  "Process a single command according to revised instructions."
+  [grid [cmd x1 y1 x2 y2]]
+  (let [turn-on!  (fn [grid x y]
+                    (set-light! grid x y
+                                (inc (grid (light x y)))))
+        turn-off! (fn [grid x y]
+                    (set-light! grid x y
+                                (max 0 (dec (grid (light x y))))))
+        toggle!   (fn [grid x y]
+                    (set-light! grid x y
+                                (+ 2 (grid (light x y)))))
+        fun (case cmd
+              "turn on"  (fn [x y] (turn-on!  grid x y))
+              "turn off" (fn [x y] (turn-off! grid x y))
+              "toggle"   (fn [x y] (toggle!   grid x y)))]
+    (loop [grid grid
+           ^long x x1
+           ^long y y1]
+      (if (<= ^long x ^long x2)
+        (if (<= ^long y ^long y2)
+          (recur (fun x y) x (inc y))
+          (recur grid (inc x) y1))
+        grid))))
+
+
+(defn part-2 []
+  (let [cmds (->> "resources/day6-part1-input"
+                  slurp
+                  s/split-lines
+                  (map parse-cmd))
+        grid (transient (make-grid))
+        solved-grid (persistent! (reduce process-cmd-revised grid cmds))]
+    (reduce + solved-grid)))

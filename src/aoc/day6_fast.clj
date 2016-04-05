@@ -70,22 +70,22 @@
     (count (filter pos? solved-grid))))
 
 
+(defn adjust-brightness!
+  "Adjust brightness at x/y with v"
+  [grid x y v]
+  (let [pos (light x y)
+        newval (+ (grid pos) v)]
+    (set-light! grid x y (or (and (pos? newval)
+                                  newval)
+                             0))))
+
 (defn process-cmd-revised
   "Process a single command according to revised instructions."
   [grid [cmd x1 y1 x2 y2]]
-  (let [turn-on!  (fn [grid x y]
-                    (set-light! grid x y
-                                (inc (grid (light x y)))))
-        turn-off! (fn [grid x y]
-                    (set-light! grid x y
-                                (max 0 (dec (grid (light x y))))))
-        toggle!   (fn [grid x y]
-                    (set-light! grid x y
-                                (+ 2 (grid (light x y)))))
-        fun (case cmd
-              "turn on"  (fn [x y] (turn-on!  grid x y))
-              "turn off" (fn [x y] (turn-off! grid x y))
-              "toggle"   (fn [x y] (toggle!   grid x y)))]
+  (let [fun (case cmd
+              "turn on"  (fn [x y] (adjust-brightness!  grid x y 1))
+              "turn off" (fn [x y] (adjust-brightness!  grid x y -1))
+              "toggle"   (fn [x y] (adjust-brightness!  grid x y 2)))]
     (loop [grid grid
            ^long x x1
            ^long y y1]
